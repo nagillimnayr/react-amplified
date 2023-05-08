@@ -1,16 +1,19 @@
-import logo from './logo.svg';
+//import logo from './logo.svg';
 import './App.css';
 import React, { useEffect, useState } from 'react'
 import {Amplify, API, graphqlOperation} from 'aws-amplify';
 import { createTodo } from './graphql/mutations';
 import { listTodos } from './graphql/queries';
+import { withAuthenticator, Button, Heading, Text, TextField, View } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+
 
 import awsExports from './aws-exports'
 Amplify.configure(awsExports);
 
 const initialState = {name: '', description: ''};
 
-function App() {
+function App({signOut, user}) {
   const [formState, setFormState] = useState(initialState);
   const [todos, setTodos] = useState([]);
 
@@ -47,18 +50,17 @@ function App() {
   }
   
   return (
-    <div style={styles.container}>
-      <header >
-        <img src={logo} className="App-logo" alt="logo" />
-        <h2>Amplify Todos</h2>
-      </header>
-      <input
+    <View style={styles.container}>
+      <Heading level={1}>Hello, {user.username}</Heading>
+      <Button onClick={signOut}>Sign Out</Button>
+      <h2>Amplify Todos</h2>
+      <TextField
         onChange={event => setInput('name', event.target.value)}
         style={styles.input}
         value={formState.name}
         placeholder="Name"
       />
-      <input
+      <TextField
         onChange={event => setInput('description', event.target.value)}
         style={styles.input}
         value={formState.description}
@@ -67,18 +69,19 @@ function App() {
       <button style={styles.button} onClick={addTodo}>Create Todo</button>
       {
         todos.map((todo, index) => (
-          <div key={todo.id ? todo.id : index} style={styles.todo}>
-            <p style={styles.todoName}>{todo.name}</p>
-            <p style={styles.todoDescription}>{todo.description}</p>
-          </div>
+          <View key={todo.id ? todo.id : index} style={styles.todo}>
+            <Text style={styles.todoName}>{todo.name}</Text>
+            <Text style={styles.todoDescription}>{todo.description}</Text>
+          </View>
         ))
       }
-    </div>
+    </View>
   );
 }
 
 const styles = {
-  container: { width: 400, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20 },
+  container: { 
+    width: 400, margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 20 },
   todo: {  marginBottom: 15 },
   input: { border: 'none', backgroundColor: '#ddd', marginBottom: 10, padding: 8, fontSize: 18 },
   todoName: { fontSize: 20, fontWeight: 'bold' },
@@ -86,4 +89,4 @@ const styles = {
   button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' }
 }
 
-export default App;
+export default withAuthenticator(App);
